@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoLoop ♻️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>EcoLoop ♻️</h1>
+            <p>A community platform to swap, repair, and recycle items locally.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search items or services...">
+            <select id="filterType" class="search-bar">
+                <option value="All">All Types</option>
+                <option value="Swap">Swap</option>
+                <option value="Repair">Repair</option>
+                <option value="Recycle">Recycle</option>
+            </select>
+        </div>
+
+        <section class="marketplace-links">
+            <h2>Sustainable Marketplaces</h2>
+            <div class="marketplace-categories">
+                <div class="category">
+                    <h3>Swap</h3>
+                    <div id="swapMarketplaces" class="marketplace-list"></div>
+                </div>
+                <div class="category">
+                    <h3>Repair</h3>
+                    <div id="repairMarketplaces" class="marketplace-list"></div>
+                </div>
+                <div class="category">
+                    <h3>Recycle</h3>
+                    <div id="recycleMarketplaces" class="marketplace-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="itemsContainer" class="items-grid"></section>
+
+        <section class="upload-form">
+            <h2>Share an Item</h2>
+            <input type="text" id="itemName" placeholder="Item name" required>
+            <select id="itemType" required>
+                <option value="Swap">Swap</option>
+                <option value="Repair">Repair</option>
+                <option value="Recycle">Recycle</option>
+            </select>
+            <input type="text" id="itemDescription" placeholder="Item description" required>
+            <input type="text" id="itemLocation" placeholder="Location" required>
+            <input type="text" id="itemPrice" placeholder="Price (e.g. $50, Free)" required>
+            <input type="url" id="itemLink" placeholder="Item link (e.g. https://example.com)" required>
+            <button class="btn" onclick="handleUpload()">Upload Item</button>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 EcoLoop. Making sustainability accessible.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { ItemManager } from './ecoloopapp.js';
+        import { sustainableMarketplaces } from './data.js';
+
+        // Initialize ItemManager
+        const itemManager = new ItemManager('itemsContainer');
+        window.handleUpload = () => itemManager.handleUpload();
+
+        // Search & filter
+        const searchInput = document.getElementById('searchInput');
+        const filterType = document.getElementById('filterType');
+
+        function debounce(func, delay) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        const handleSearch = debounce(() => {
+            itemManager.filterItems(searchInput.value, filterType.value);
+        }, 300);
+
+        searchInput.addEventListener('input', handleSearch);
+        filterType.addEventListener('change', handleSearch);
+
+        // Populate marketplace links
+        function populateMarketplaces() {
+            for (const [category, marketplaces] of Object.entries(sustainableMarketplaces)) {
+                const container = document.getElementById(`${category.toLowerCase()}Marketplaces`);
+                if (container) {
+                    marketplaces.forEach(market => {
+                        const div = document.createElement('div');
+                        div.className = 'marketplace';
+                        div.innerHTML = `
+                            <a href="${market.url}" target="_blank">${market.name}</a>
+                            <small>${market.description}</small>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+            }
+        }
+
+        // Init
+        populateMarketplaces();
+        itemManager.loadItems();
+    </script>
+</body>
+</html>
